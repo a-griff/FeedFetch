@@ -1,0 +1,84 @@
+FeedFetch v1.0 - Lightweight Server-Side RSS Reader
+====================================================
+
+Overview
+--------
+FeedFetch is a single Perl CGI script that retrieves RSS or Atom feeds
+directly from your web server and outputs simple, styled HTML headlines.
+It works entirely server-side and requires no JavaScript or external proxies.
+
+Requirements
+------------
+* Perl 5.x
+* Core modules: Socket, IO::Socket::INET, URI::Escape
+* Optional: IO::Socket::SSL, Net::SSLeay for HTTPS feed support
+
+Installation
+------------
+1. Copy files to your web directory:
+   feedfetch.pl  ->  /path/to/public_html/
+   index.html    ->  /path/to/public_html/
+   index-text.html -> /path/to/public_html/
+
+2. Make the script executable:
+   chmod 755 feedfetch.pl
+
+3. Enable CGI execution in Apache or lighttpd configuration:
+   Options +ExecCGI
+   AddHandler cgi-script .pl
+
+4. Test in browser:
+   https://yourdomain.com/feedfetch.pl?url=http://rss.cnn.com/rss/edition.rss
+
+Configuration
+-------------
+Edit feedfetch.pl and modify values in the CONFIGURATION SECTION.
+
+Key options:
+  $MAX_ITEMS        Number of headlines per feed (default 15)
+  $TIMEOUT          Socket timeout in seconds (default 15)
+  $FONT_FAMILY      Font family (default "sans-serif")
+  $FONT_SIZE        Base text size (default "90%")
+  $BOX_BORDER       Feed box border style
+  $BOX_BG           Background color
+  $LINK_COLOR       Link color
+  $LINK_HOVER       Hover effect ("underline" or "none")
+
+Usage
+-----
+You can display feeds in two formats:
+
+1. Graphical Layout (index.html)
+   This version arranges multiple feeds in an HTML table with iframes:
+   <iframe src="feedfetch.pl?url=http://rss.cnn.com/rss/edition.rss"
+           width="100%" height="600" frameborder="0"></iframe>
+
+   To add more feeds:
+   - Open index.html
+   - Duplicate one of the <td> blocks
+   - Replace the feed URL and optionally adjust the height/width
+   - Add new <tr> rows if you want multiple feed rows
+
+2. Text-Browser Layout (index-text.html)
+   This version is designed for text browsers such as lynx, links, or w3m.
+   It displays clickable text links that directly invoke feedfetch.pl.
+
+   Example structure:
+   <ul>
+     <li><a href="feedfetch.pl?url=https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en">Google News</a></li>
+     <li><a href="feedfetch.pl?url=http://rss.cnn.com/rss/edition.rss">CNN News</a></li>
+     <li><a href="feedfetch.pl?url=https://feeds.foxnews.com/foxnews/latest">Fox News</a></li>
+   </ul>
+
+   To add feeds:
+   - Open index-text.html
+   - Duplicate one of the <li> lines
+   - Replace the URL and name with your new feed
+
+   This version uses no frames, images, or CSS, ensuring compatibility with
+   console browsers and ultra-minimal environments.
+
+License
+-------
+This script is provided free for personal or non-commercial use.
+No warranty is provided. Use at your own discretion.
