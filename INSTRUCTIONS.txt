@@ -1,168 +1,181 @@
-FeedFetch v1.0 — INSTRUCTIONS
-================================
+===============================================================
+FeedFetch v1.2 - INSTRUCTIONS
+===============================================================
 
-Overview
---------
-FeedFetch is a **modular Perl CGI** script that fetches and renders RSS/Atom/RDF feeds
-as a clean list of clickable article titles. It handles:
-- HTTP/HTTPS
-- Redirects
-- Transfer-Encoding: chunked
-- Content-Encoding: gzip/deflate
+DESCRIPTION
+---------------------------------------------------------------
+FeedFetch is a self-contained Perl CGI script that retrieves and
+displays RSS, Atom, or RDF news feeds in plain HTML format.
 
-This package contains:
-- feedfetch.pl   — the CGI script (modular; DEBUG default is N)
-- index.html     — example dashboard that shows multiple feeds via iframes
-- INSTRUCTIONS.txt (this file)
+It runs entirely server-side — no external modules or frameworks
+are required other than standard Perl libraries and optional
+IO::Socket::SSL for HTTPS connections.
 
+FeedFetch outputs each feed as a simple text list:
+  <b>Feed Title</b>
+  • Headline 1
+  • Headline 2
+  • ...
 
-Requirements
-------------
-• Perl 5.10+
-• Web server that can execute CGI (Apache, lighttpd, nginx+fcgiwrap, etc.)
-• Required Perl modules (install with your system package manager or CPAN):
+Each headline is a clickable link (opens in a new tab) and has
+no underlines or surrounding boxes.  Colors, font, and bullet
+style are configurable.
+
+---------------------------------------------------------------
+FILES INCLUDED
+---------------------------------------------------------------
+feedfetch.pl      - Main Perl CGI script
+index.html        - Example HTML page displaying multiple feeds
+INSTRUCTIONS.txt  - This documentation
+CHANGELOG.txt     - Version history and technical changes
+
+---------------------------------------------------------------
+REQUIREMENTS
+---------------------------------------------------------------
+• Perl 5.x or newer
+• Web server capable of running CGI scripts (e.g., Apache, lighttpd)
+• The following Perl core modules (included by default):
+    - Socket
     - IO::Socket::INET
-    - IO::Socket::SSL
+    - URI::Escape
+• Optional (for HTTPS feeds):
+    - IO::Socket::SSL  (recommended but not mandatory)
+• Optional (for compressed feeds):
     - IO::Uncompress::Gunzip
     - Compress::Raw::Zlib
-    - URI::Escape
 
-Example installs:
-    Debian/Ubuntu:
-        sudo apt-get install perl libio-socket-ssl-perl libio-compress-perl liburi-escape-xs-perl
+FeedFetch does not use external dependencies like LWP::UserAgent
+or XML::RSS — all network and XML parsing is handled internally.
 
-    RHEL/CentOS/Rocky:
-        sudo yum install perl IO::Socket::SSL perl-IO-Compress
+---------------------------------------------------------------
+INSTALLATION
+---------------------------------------------------------------
+1. Upload `feedfetch.pl` to a directory that allows CGI execution.
+   Example:
+      /home/username/public_html/news/feedfetch.pl
 
-    CPAN (generic):
-        cpan IO::Socket::SSL IO::Uncompress::Gunzip Compress::Raw::Zlib URI::Escape
+2. Make the script executable:
+      chmod 755 feedfetch.pl
 
+3. Ensure your server’s CGI handler is active for that directory.
 
-Installation
-------------
-1) Copy files to your CGI-enabled location.
-   • Common Apache paths: /usr/lib/cgi-bin/  or  /var/www/cgi-bin/
-   • Or keep feedfetch.pl in your CGI dir and place index.html under your normal docroot.
+4. Upload `index.html` to the same directory or a subfolder of
+   your web root.
 
-2) Make the script executable:
-        chmod +x feedfetch.pl
+5. Confirm the script runs directly:
+      https://yourserver/path/feedfetch.pl?url=https://example.com/feed
 
-3) Ensure CGI is enabled on your server.
+If successful, FeedFetch will display the latest headlines from
+the given feed.
 
-   Apache (example):
-       a) Enable CGI:
-            a2enmod cgi          # Debian/Ubuntu
-       b) Allow .pl execution (one option):
-            ScriptAlias /cgi-bin/ "/usr/lib/cgi-bin/"
-            <Directory "/usr/lib/cgi-bin/">
-                AllowOverride None
-                Options +ExecCGI
-                AddHandler cgi-script .cgi .pl
-                Require all granted
-            </Directory>
-       c) Restart Apache:
-            sudo service apache2 restart
+---------------------------------------------------------------
+CONFIGURATION
+---------------------------------------------------------------
+All user-adjustable settings are at the top of `feedfetch.pl`.
 
-   nginx (example, via fcgiwrap) — consult your distro documentation.
+# ---------------- CONFIGURATION ----------------
+my $VERSION       = "1.2";
+my $MAX_ITEMS     = 15;        # Number of headlines per feed
+my $TIMEOUT       = 20;        # Network timeout (seconds)
+my $MAX_REDIRECTS = 4;         # Max HTTP redirect depth
+my $DEBUG         = 'N';       # Set to 'Y' or use ?debug=1 to enable
 
-4) Test the CGI directly in your browser:
-        http://yourserver/cgi-bin/feedfetch.pl?url=https://rss.slashdot.org/slashdot/slashdotMain
+# Appearance
+my $FONT_FAMILY   = "sans-serif";   # Body font
+my $FONT_SIZE     = 10;             # Text size (pixels)
+my $BG_COLOR      = "#FFFFFF";      # Background color
+my $BULLET_STYLE  = "• ";           # Prefix before each link
+my $LINK_COLOR    = "#0044AA";      # Normal link color
+my $VISITED_COLOR = "#880088";      # Visited link color
 
-   If you see a list of headlines, CGI is working.
+---------------------------------------------------------------
+USAGE
+---------------------------------------------------------------
+FeedFetch is typically called from an HTML page using iframes.
 
-5) Open the dashboard:
-   Place index.html in a web-accessible directory and browse to it.
-   The sample iframes call feedfetch.pl with several tech feeds.
+Example (from `index.html`):
+---------------------------------------------------------------
+<iframe
+  src="./feedfetch.pl?url=https://rss.slashdot.org/slashdot/slashdotMain"
+  style="width:33%; height:500px;"
+  frameborder="0">
+</iframe>
+---------------------------------------------------------------
 
+You may duplicate and modify these blocks for any RSS, Atom, or
+RDF feed by changing the `url=` parameter.
 
-How to Add or Remove Feeds
---------------------------
-The dashboard uses simple <iframe> elements that call feedfetch.pl with a feed URL.
+FeedFetch automatically detects feed format and encoding:
+• RSS 2.0 and 1.0
+• Atom 1.0
+• RDF XML
+• Gzip or Deflate compression
+• HTTP/HTTPS with redirects
 
-Example block (in index.html):
-    <iframe src="./feedfetch.pl?url=https://rss.slashdot.org/slashdot/slashdotMain"></iframe>
+---------------------------------------------------------------
+DEBUG MODE
+---------------------------------------------------------------
+Set `$DEBUG = 'Y';` at the top of the script, or append `?debug=1`
+to any feed URL for verbose diagnostic output.
 
-• To ADD a feed: duplicate an <iframe> line and change the URL after  url=
-• To REMOVE a feed: delete that <iframe> line
-• You may mix RSS, Atom, and RDF feeds; the script auto-detects the format.
-• The visible box title is taken from the feed’s <title> element.
+Example:
+   feedfetch.pl?url=https://www.wired.com/feed/rss&debug=1
 
-Layout tips (index.html):
-• The grid is CSS-based. Adjust column width/height via the CSS:
-      .grid { grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 8px; }
-      iframe { height: 450px; }
-  Increase or decrease minmax() and height to suit your screen.
+This prints connection headers, encoding status, and parsing info.
 
-Direct Use (without the dashboard)
-----------------------------------
-You can call the CGI directly for a single feed:
-    http://yourserver/cgi-bin/feedfetch.pl?url=FEED_URL
+---------------------------------------------------------------
+ADDING / REMOVING FEEDS
+---------------------------------------------------------------
+To add a new feed:
+1. Open `index.html` in a text editor.
+2. Duplicate one of the existing <iframe> sections.
+3. Replace the feed URL in the `url=` parameter.
 
-Examples:
-    http://yourserver/cgi-bin/feedfetch.pl?url=https://feeds.arstechnica.com/arstechnica/index
-    http://yourserver/cgi-bin/feedfetch.pl?url=https://www.wired.com/feed/rss
-    http://yourserver/cgi-bin/feedfetch.pl?url=https://rss.slashdot.org/slashdot/slashdotMain
+Example:
+   <iframe src="./feedfetch.pl?url=https://example.com/rss.xml"
+           style="width:33%; height:500px;" frameborder="0"></iframe>
 
+To remove a feed, simply delete its corresponding <iframe> block.
 
-Configuration (feedfetch.pl)
-----------------------------
-Open feedfetch.pl and edit the configuration section near the top:
+---------------------------------------------------------------
+CUSTOMIZATION NOTES
+---------------------------------------------------------------
+• Set `$BULLET_STYLE` to an empty string ("") to remove bullets.
+• Set `$LINK_COLOR` and `$VISITED_COLOR` to "#000000" for black
+  links (no visual change from body text).
+• Increase `$FONT_SIZE` for better readability.
+• Adjust `width` and `height` in index.html if boxes are too large.
+• `$MAX_ITEMS` limits the number of headlines per feed window.
 
-    my $MAX_ITEMS     = 15;   # headlines per feed
-    my $TIMEOUT       = 20;   # socket timeout (seconds)
-    my $DEBUG         = 'N';  # default debug mode: 'Y' or 'N' (default is N)
+---------------------------------------------------------------
+TROUBLESHOOTING
+---------------------------------------------------------------
+• If you see “Internal Server Error”:
+    - Check script permissions (chmod 755 feedfetch.pl)
+    - Check Apache error log for details
+• If “No data received” appears:
+    - The remote feed may be offline or blocking connections.
+    - Try loading the feed URL directly in a browser.
+• If SSL feeds fail:
+    - Install IO::Socket::SSL from your package manager:
+        Slackware:   slackpkg install perl-io-socket-ssl
+        Debian/Ubuntu:  apt install libio-socket-ssl-perl
+        Fedora:      dnf install perl-IO-Socket-SSL
 
-    # Appearance (applies to the rendered list inside each iframe):
-    my $FONT_FAMILY = "sans-serif";
-    my $FONT_SIZE   = "10pt";
-    my $BOX_BORDER  = "1px solid #888";
-    my $BOX_BG      = "#f8f8f8";
-    my $BOX_PADDING = "0.6em";
-    my $BOX_HEIGHT  = "100%";
-    my $LINK_COLOR  = "#0044aa";
+---------------------------------------------------------------
+COMPATIBILITY
+---------------------------------------------------------------
+FeedFetch v1.2 is backward compatible with v1.0 and v1.1.
+It retains all prior behavior and configuration variable names.
+No output format changes were made other than color options.
 
-Temporarily enabling DEBUG output
-• Without editing the file, you can enable debug for a single request by adding “&debug=1”
-  to the query string:
-      http://yourserver/cgi-bin/feedfetch.pl?url=...&debug=1
+---------------------------------------------------------------
+LICENSE
+---------------------------------------------------------------
+Free for personal or public web use.  
+No attribution required.  
+Redistribution permitted if script remains unmodified.
 
-
-Security Notes
---------------
-• The script fetches third‑party URLs supplied in the query string. If exposing this publicly,
-  consider restricting allowable hostnames or proxying via a whitelist.
-• The output is simple HTML; links open in a new tab/window (target=_blank).
-• Some sites block framing; this script renders the feed content itself, so framing restrictions
-  on the *site* typically do not affect FeedFetch (you are not framing their pages, only our output).
-
-
-Troubleshooting
----------------
-• “No data received …”
-    - Check the feed URL is correct and accessible from the server (firewall/DNS).
-    - Try HTTPS if HTTP fails (the script auto-tries both in some cases).
-    - Some hosts block requests without a browser-like User-Agent; FeedFetch sends one.
-
-• “Unknown feed format.”
-    - The feed may not be valid RSS/Atom/RDF, or it is HTML/JSON.
-    - Use &debug=1 to view response headers; verify Content-Type and payload.
-
-• Binary-looking garbage or ‘gzip’ byte signatures in debug
-    - Ensure the required modules are installed, especially IO::Uncompress::Gunzip and
-      Compress::Raw::Zlib.
-    - The script first de-chunks, then decompresses gzip/deflate.
-
-• 500 Internal Server Error
-    - Make sure feedfetch.pl is executable (chmod +x).
-    - Confirm CGI is enabled and .pl is allowed to execute.
-    - Check the web server error log for Perl syntax errors or missing modules.
-
-• SELinux/AppArmor
-    - If enabled, ensure your web server is allowed to make outbound network connections
-      (e.g., setsebool -P httpd_can_network_connect 1 on SELinux systems).
-
-
-License & Version
------------------
-• You may use and modify FeedFetch for your own deployments.
-• Version: 1.0 (stable) — DEBUG default is N.
+===============================================================
+End of INSTRUCTIONS
+===============================================================
