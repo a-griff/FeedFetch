@@ -2,6 +2,20 @@
 FeedFetch - CHANGELOG
 ===============================================================
 
+Version: 1.2
+Date: 2025-10-23
+---------------------------------------------------------------
+• Added new CONFIGURATION options for improved readability:
+  - BULLET_STYLE — adds a prefix before each headline link.
+      Example: "• " or "- "  (set to "" for no bullet)
+  - LINK_COLOR — sets color of normal (unvisited) links.
+  - VISITED_COLOR — sets color of visited links.
+• Updated HTML header to include <style> section for link colors.
+• Retained plain-text HTML output with no underlines.
+• No logic, parsing, or networking behavior changed.
+• Fully compatible with prior FeedFetch v1.1 configurations.
+
+---------------------------------------------------------------
 Version: 1.1
 Date: 2025-10-23
 ---------------------------------------------------------------
