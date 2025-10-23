@@ -1,0 +1,46 @@
+===============================================================
+FeedFetch - CHANGELOG
+===============================================================
+
+Version: 1.1
+Date: 2025-10-23
+---------------------------------------------------------------
+• Simplified output to plain HTML text.
+  - Removed all <div>, <ul>, <li>, and CSS box formatting.
+  - Headlines now print as <a> links followed by <br>.
+• Added CONFIGURATION options:
+  - FONT_FAMILY – body text font (e.g. "sans-serif")
+  - FONT_SIZE   – font size in pixels (default: 10)
+  - BG_COLOR    – page background color (default: #FFFFFF)
+• Adjusted HTML wrapper to apply only body-level styling.
+• Links now appear as plain text:
+  - Added inline style "text-decoration:none; color:inherit"
+  - Removes underlines and color highlighting.
+• Maintained all networking, decoding, and parsing logic:
+  - HTTPS (via IO::Socket::SSL)
+  - Chunked, gzip, and deflate decoding
+  - RSS / Atom / RDF parsing
+  - Multi-level redirect handling
+• Debugging system unchanged (enable with DEBUG='Y' or ?debug=1)
+• Fully compatible with FeedServ v1.0 front-end layouts.
+
+---------------------------------------------------------------
+Version: 1.0
+Date: 2025-10-22
+---------------------------------------------------------------
+• Initial stable modular release.
+• Added subroutine-based structure:
+  - fetch_with_fallback()
+  - fetch_http()
+  - decode_chunked(), decode_gzip(), decode_deflate()
+  - parse_rss(), parse_atom(), parse_rdf()
+• Added robust header/body split and decoding sequence.
+• Implemented graceful HTTP/HTTPS fallback.
+• Added DEBUG mode (runtime or query-string toggle).
+• Verified compatibility with multiple public feeds.
+• First version to properly handle gzip and chunked feeds.
+• Formatted output in graphical boxes (now deprecated).
+
+===============================================================
+End of CHANGELOG
+===============================================================
